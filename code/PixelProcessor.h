@@ -10,6 +10,8 @@
  * @param  bShift: the shift value of color b shift
  */
 
+#include "BmpProcessor.h"
+
 #ifndef PixelProcessor_H
 #define PixelProcessor_H
 

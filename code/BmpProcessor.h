@@ -1,6 +1,8 @@
 #ifndef BMPPROCESSOR_H
 #define BMPPROCESSOR_H
 
+#include "PixelProcessor.h"
+
 #include <stdio.h>
 
 struct BMP_Header {
