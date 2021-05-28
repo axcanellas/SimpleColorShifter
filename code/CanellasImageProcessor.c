@@ -5,13 +5,12 @@
 #include <unistd.h>
 
 //USER WRITTEN INCLUDES
-//#include "PpmProcessor.h"
+#include "PpmProcessor.h"
 #include "PixelProcessor.h"
 #include "BmpProcessor.h"
 
 //FORWARD DECLARATIONS
 int processImage();
-
 
 //MACRO DEFINITIONS
 #define MAX_FILENAME_LENGTH 32
@@ -25,6 +24,7 @@ int redShift, greenShift, blueShift;
 
 struct BMP_Header* bmpHeader;
 struct DIB_Header* dibHeader;
+struct PPM_Header* ppmHeader;
 struct Pixel** image_array;
 
 int main(int argc, char* argv[]) {
@@ -39,15 +39,15 @@ int main(int argc, char* argv[]) {
 			case 'o':
 				out_filename = optarg;
 				break;
-            case 'r':
-                redShift = optarg;
-                break;
-            case 'g':
-                greenShift = optarg;
-                break;
-            case 'b':
-                blueShift = optarg;
-                break;
+			case 'r':
+				redShift = atoi(optarg);
+				break;
+			case 'g':
+				greenShift = atoi(optarg);
+				break;
+			case 'b':
+				blueShift = atoi(optarg);
+				break;
 			case ':':
 				fprintf(stderr, "\nERROR : option '-%c' requires an argument\n", optopt);
 				exit(EXIT_FAILURE);
@@ -73,14 +73,21 @@ int processImage(char* in_filename) {
 		return EXIT_FAILURE;
 	}
 
-	//define and read headers
-    bmpHeader = malloc(sizeof(struct BMP_Header));
-    dibHeader = malloc(sizeof(struct DIB_Header));
-	readBMPHeader(in_file, bmpHeader);
-    readDIBHeader(in_file, dibHeader);
+	//if infile is a BMP, define and read headers accordingly
+		/*bmpHeader = malloc(sizeof(struct BMP_Header));
+		dibHeader = malloc(sizeof(struct DIB_Header));
+		readBMPHeader(in_file, bmpHeader);
+		readDIBHeader(in_file, dibHeader);
 
-	int imageHeight = dibHeader->height;
-	int imageWidth = dibHeader->width;
+		int imageHeight = dibHeader->height;
+		int imageWidth = dibHeader->width;
+        */
+
+	//else, if infile is PPM, define and read headers accordingly
+		ppmHeader = malloc(sizeof(struct PPM_Header));
+		readPPMHeader(in_file, ppmHeader);
+		int imageHeight = ppmHeader->height;
+		int imageWidth = ppmHeader->width;
 
 	if(imageHeight > MAXIMUM_IMAGE_SIZE || imageWidth > MAXIMUM_IMAGE_SIZE) {
 		//headerDestructor();
@@ -95,24 +102,34 @@ int processImage(char* in_filename) {
 	}
 
 	//read in the pixels from the image
-	readPixelsBMP(in_file, image_array, imageWidth, imageHeight);
+	//TODO: readPixelsBMP(in_file, image_array, imageWidth, imageHeight);
+	readPixelsPPM(in_file, &image_array, imageWidth, imageHeight);
 
 	//close the input file
 	fclose(in_file);
 
+	//color-shift the pixels stored in image_array
+	colorShiftPixels(image_array, imageWidth, imageHeight, redShift, greenShift, blueShift);
+
 	//open the output file
 	FILE *out_file = fopen(out_filename, "w");
 	if (!out_file)
-	    perror("fopen");
+		perror("fopen");
 
-    //write headers out to file
-    writeBMPHeader(out_file, bmpHeader);
-    writeDIBHeader(out_file, dibHeader);
+	//if outfile is a BMP, write BMP/DIB headers out to file
+	//TODO: writeBMPHeader(out_file, bmpHeader);
+	//TODO: writeDIBHeader(out_file, dibHeader);
 
-    //write pixels out to file
-    writePixelsBMP(out_file, image_array, imageWidth, imageHeight);
+	//else if outfile is a PPM, write PPM header out to file
+	// [TODO]
 
-    //close the output file
-    fclose(out_file);
+	//write pixels out to file
+	writePixelsBMP(out_file, image_array, imageWidth, imageHeight);
+
+	//close the output file
+	fclose(out_file);
+
+	//free all allocated memory
+	// [TODO]
 	return(EXIT_SUCCESS);
 }

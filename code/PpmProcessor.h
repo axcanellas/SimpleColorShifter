@@ -1,6 +1,18 @@
+#include <stdio.h>
+
+#include "PixelProcessor.h"
+
 struct PPM_Header{
-	//TODO:Finish struct
+	unsigned char signature[2]; //magic number corresponding to PPM format
+	unsigned int width;					//width of the PPM image
+	unsigned int height;        //height of the PPM image
+	unsigned int maxval;        //max color value
 };
+
+//FUNCTION PROTOTYPES
+void readWhitespace(FILE* file);
+int readDecimalDigits(FILE* file);
+int charToDecimal(int val);
 
 /**
  * read PPM header of a file. Useful for converting files from BMP to PPM.
@@ -32,11 +44,11 @@ void makePPMHeader(struct PPM_Header* header, int width, int height);
  * read Pixels from PPM file based on width and height.
  *
  * @param  file: A pointer to the file being read or written
- * @param  pArr: Pixel array of the image that this header is for 
+ * @param  pArr: Pixel array of the image that this header is for
  * @param  width: Width of the image that this header is for
  * @param  height: Height of the image that this header is for
  */
-void readPixelsPPM(FILE* file, struct Pixel** pArr, int width, int height);
+void readPixelsPPM(FILE* file, struct Pixel*** pArr, int width, int height);
 
 /**
  * write Pixels from PPM file based on width and height.
