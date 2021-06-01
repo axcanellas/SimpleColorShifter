@@ -129,3 +129,26 @@ void writePixelsBMP(FILE* file, struct Pixel** pArr, int width, int height){
         fwrite(pad, sizeof(unsigned char), paddingRemainder, file);
     }
 }
+
+void makeBMPHeader(struct BMP_Header *header, int width, int height) {
+    header->signature[0] = 'B';
+    header->signature[1] = 'M';
+    header->size = width * height;
+    header->reserved1 = 0;
+    header->reserved2 = 0;
+    header->offset_pixel_array = 54;
+}
+
+void makeDIBHeader(struct DIB_Header *header, int width, int height) {
+    header->size = 40;
+    header->width = width;
+    header->height = height;
+    header->planes = 1;
+    header->bits_per_pixel = 24;
+    header->compression = 0;
+    header->image_size = width * height;
+    header->x_pixels_per_meter = width;
+    header-> y_pixels_per_meter = height;
+    header->color_palette_size = 0;
+    header->important_color_count = 0;
+}

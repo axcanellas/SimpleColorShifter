@@ -22,8 +22,8 @@ void colorShiftPixels(struct Pixel** pArr, int width, int height, int rShift, in
     for (int i = 0; i < width; i++) {
         for (int j = 0; j < height; j++) {
             pArr[i][j].red = clampPixels(pArr[i][j].red + rShift);
-            pArr[i][j].green = clampPixels(pArr[i][j].blue + bShift);
-            pArr[i][j].blue = clampPixels(pArr[i][j].green + gShift);
+            pArr[i][j].green = clampPixels(pArr[i][j].green + bShift);
+            pArr[i][j].blue = clampPixels(pArr[i][j].blue + gShift);
 
         }
     }

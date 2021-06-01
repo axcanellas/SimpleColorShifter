@@ -12,31 +12,15 @@
  * @param  header: Pointer to the destination PPM header
  */
 void readPPMHeader(FILE* file, struct PPM_Header* header){
-    /*//read in the magic number
-    header->signature[0] = fgetc(file);
-    header->signature[1] = fgetc(file);
-    //discard whitespace
-    readWhitespace(file);
-    //read in width
-    header->width = readDecimalDigits(file);
-    //discard whitespace
-    readWhitespace(file);
-    //read in height
-    header->height = readDecimalDigits(file);
-    //discard whitespace
-    readWhitespace(file);
-    //read in maximum color value
-    header->maxval = readDecimalDigits(file);
-    //consume that last single whitespace
-    fgetc(file);*/
 
-
-   fscanf(file,"\n%c%c%c%c%c\n",
-          &header->signature[0],
-          &header->signature[1],
-          &header->width,
-          &header->height,
-          &header->maxval);
+    fread(header->signature, sizeof(char), 2, file);
+    fscanf(file, " ");
+    fscanf(file, "%d", &header->width);
+    fscanf(file, " ");
+    fscanf(file, "%d", &header->height);
+    fscanf(file, " ");
+    fscanf(file, "%d", &header->maxval);
+    fscanf(file, " ");
 
 }
 
@@ -49,7 +33,7 @@ void readPPMHeader(FILE* file, struct PPM_Header* header){
 
  */
 void writePPMHeader(FILE* file, struct PPM_Header* header){
-
+    fprintf(file, "P6\n%d %d\n%d\n", header->width, header->height, header->maxval);
 }
 
 /**
@@ -60,7 +44,11 @@ void writePPMHeader(FILE* file, struct PPM_Header* header){
  * @param  height: Height of the image that this header is for
  */
 void makePPMHeader(struct PPM_Header* header, int width, int height){
-
+    header->signature[0] = 'P';
+    header->signature[1] = '6';
+    header->width = width;
+    header->height = height;
+    header->maxval = 255;
 }
 
 /**
@@ -71,12 +59,13 @@ void makePPMHeader(struct PPM_Header* header, int width, int height){
  * @param  width: Width of the image that this header is for
  * @param  height: Height of the image that this header is for
  */
-void readPixelsPPM(FILE* file, struct Pixel*** pArr, int width, int height){
+void readPixelsPPM(FILE* file, struct Pixel** pArr, int width, int height){
     for (int i = 0; i < height; ++i) {
         for (int j = 0; j < width; ++j) {
-            fread(&(( * pArr)[i][j].green), sizeof(char), 1, file);
-            fread(&(( * pArr)[i][j].green), sizeof(char), 1, file);
-            fread(&(( * pArr)[i][j].blue), sizeof(char), 1, file);
+            fread((&pArr[i][j].red), sizeof(char), 1, file);
+            fread((&pArr[i][j].green), sizeof(char), 1, file);
+            fread((&pArr[i][j].blue), sizeof(char), 1, file);
+            printf("READING blue: %x green: %x red: %x \n", pArr[i][j].blue, pArr[i][j].green, pArr[i][j].red);
         }
     }
 }
@@ -89,7 +78,14 @@ void readPixelsPPM(FILE* file, struct Pixel*** pArr, int width, int height){
  * @param  height: Height of the image that this header is for
  */
 void writePixelsPPM(FILE* file, struct Pixel** pArr, int width, int height){
-
+    for (int i = 0; i < height; ++i) {
+        for (int j = 0; j < width; ++j) {
+            fwrite(&((pArr)[i][j].red), sizeof(char), 1, file);
+            fwrite(&((pArr)[i][j].green), sizeof(char), 1, file);
+            fwrite(&((pArr)[i][j].blue), sizeof(char), 1, file);
+            printf("WRITING blue: %x green: %x red: %x \n", ((  pArr)[i][j].blue), ((  pArr)[i][j].green), ((  pArr)[i][j].red));
+        }
+    }
 }
 
 /*
@@ -112,9 +108,7 @@ int readDecimalDigits(FILE *file) {
             ungetc(c, file);
             return val;
         }
-
         int digit = charToDecimal(c);
-
         val = (val*10) + digit;
     }
 
