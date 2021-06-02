@@ -1,3 +1,14 @@
+/**
+ * Color shifts images based on user input using '-r', -'g', '-b' options for shifting each color channel.
+ * Works with bmp and ppm images. User can specify which type is desired for output using '-t' option.
+ * Output filename is specified with '-o' option.
+ *
+ * Completion time: 50 hours
+ *
+ * @author Canellas
+ * @version 1.0
+ */
+
 //STANDARD INCLUDES
 #include <stdio.h>
 #include <stdlib.h>

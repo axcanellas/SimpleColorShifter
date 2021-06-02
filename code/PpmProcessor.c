@@ -1,3 +1,10 @@
+/**
+ * Implements PPM file processing functionality
+ *
+ * @author Canellas
+ * @version 1.0
+ */
+
 //STANDARD INCLUDES
 #include <stdio.h>
 #include <ctype.h>

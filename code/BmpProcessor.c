@@ -1,3 +1,10 @@
+/**
+ * Implements BMP file processing functionality
+ *
+ * @author Canellas
+ * @version 1.0
+ */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include "BmpProcessor.h"
