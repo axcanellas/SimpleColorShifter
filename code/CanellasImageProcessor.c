@@ -23,7 +23,6 @@ void headerDestructor(void* header);
 #define PPM_SIGNATURE "P6"
 
 //GLOBAL VARIABLES
-//int imageWidth, imageHeight;
 char* in_filename;
 char* out_filename;
 char* outFileFormat;
@@ -40,37 +39,40 @@ struct Pixel** image_array;
 
 int main(int argc, char* argv[]) {
 
-	int option;
+    int option;
     opterr = 0;
-	while ( (option = getopt(argc, argv, ":i:o:r:g:b:t")) != -1 ) {
-		switch(option) {
-			case 'i':
-				in_filename = optarg;
-                break;
-			case 'o':
-				out_filename = optarg;
-				break;
-			case 'r':
-				redShift = atoi(optarg);
-				break;
-			case 'g':
-				greenShift = atoi(optarg);
-				break;
-            case 'b':
-                blueShift = atoi(optarg);
-                break;
-            case 't':
-                outFileFormat = optarg;
-                t_option = 1;
-                break;
-			case ':':
-				fprintf(stderr, "\nERROR : option '-%c' requires an argument\n", optopt);
-				exit(EXIT_FAILURE);
-			case '?':
-			default:
-				fprintf(stderr, "\nERROR : option '-%c' is invalid\n", optopt);
-		}
-	}
+    while ( (option = getopt(argc, argv, ":i:o:r:g:b:t")) != -1 ) {
+        switch(option) {
+          /*case 'i':
+              in_filename = optarg;
+              break;*/
+          case 'o':
+              out_filename = optarg;
+              break;
+          case 'r':
+              redShift = atoi(optarg);
+              break;
+          case 'g':
+              greenShift = atoi(optarg);
+              break;
+          case 'b':
+              blueShift = atoi(optarg);
+              break;
+          case 't':
+              outFileFormat = optarg;
+              t_option = 1;
+              break;
+          case ':':
+              fprintf(stderr, "\nERROR : option '-%c' requires an argument\n", optopt);
+              exit(EXIT_FAILURE);
+          case '?':
+          default:
+              fprintf(stderr, "\nERROR : option '-%c' is invalid\n", optopt);
+		    }
+	  }
+    for (int i = optind; i < argc; i++) {
+        in_filename = argv[i];
+    }
 
 	if (processImage(in_filename) != EXIT_SUCCESS) {
 		exit(EXIT_FAILURE);
@@ -82,86 +84,98 @@ int main(int argc, char* argv[]) {
 
 int processImage(char* in_filename) {
 
-	FILE* in_file = fopen(in_filename, "rb");
-	if (in_file == NULL) {
-		perror("ERROR: Could not open input file \n");
-		return EXIT_FAILURE;
-	}
+    //open input file and check for errors
+    FILE* in_file = fopen(in_filename, "rb");
+    if (in_file == NULL) {
+        perror("ERROR: Could not open input file \n");
+        return EXIT_FAILURE;
+    }
 
-	//read first 2 bytes to determine input filetype
-    unsigned char signature[2];
+    //read first 2 bytes to determine input filetype
+    char signature[2];
     fread(signature, sizeof(char), 2, in_file);
-    rewind(in_file);
+    rewind(in_file); //reset file read position before moving on
+
+    //if the signature is a BMP...
     if (strcmp(signature, BMP_SIGNATURE) == 0) {
+        //set the appropriate flag
         inputIsBMP = 1;
+        //allocate space for and read in appropriate headers
         bmpHeader = malloc(sizeof(struct BMP_Header));
         dibHeader = malloc(sizeof(struct DIB_Header));
-        readBMPHeader(in_file, bmpHeader);
-        readDIBHeader(in_file, dibHeader);
+        readBMPHeader(in_file, bmpHeader); //stores the image's BMP header into a BMP header struct
+        readDIBHeader(in_file, dibHeader); //stores the image's DIB header into a DIB header struct
 
         int imageHeight = dibHeader->height;
         int imageWidth = dibHeader->width;
 
+        //abort if image exceeds maximum size
         if(imageHeight > MAXIMUM_IMAGE_SIZE || imageWidth > MAXIMUM_IMAGE_SIZE) {
             headerDestructor(bmpHeader);
             headerDestructor(dibHeader);
-            fprintf(stderr, "ERROR: Image exceeds maximum image side (%dH x %dW)\n", imageHeight, imageWidth);
+            fprintf(stderr, "ERROR: Image exceeds maximum image size (%dH x %dW)\n", imageHeight, imageWidth);
             return EXIT_FAILURE;
         }
 
         //allocate memory for pixel buffer in a 2D array
         image_array = allocateMemoryForPixelArray(imageHeight, imageWidth);
 
-        //read in the pixels from the image
+        //read the image's pixels into image_array
         readPixelsBMP(in_file, image_array, imageWidth, imageHeight);
-
-        //close the input file
-        fclose(in_file);
 
         //color-shift the pixels stored in image_array
         colorShiftPixels(image_array, imageWidth, imageHeight, redShift, greenShift, blueShift);
 
+    //if the signature is a PPM...
     } else if (strcmp(signature, PPM_SIGNATURE) == 0) {
+        //inputIsBMP flag already initialized to 0
+        //allocate space for and read in appropriate headers
         ppmHeader = malloc(sizeof(struct PPM_Header));
-        readPPMHeader(in_file, ppmHeader);
+        readPPMHeader(in_file, ppmHeader); //stores the image's PPM header into a PPM header struct
+
         int imageHeight = ppmHeader->height;
         int imageWidth = ppmHeader->width;
 
+        //abort is image exceeds maximum size
         if(imageHeight > MAXIMUM_IMAGE_SIZE || imageWidth > MAXIMUM_IMAGE_SIZE) {
             headerDestructor(ppmHeader);
-            fprintf(stderr, "ERROR: Image exceeds maximum image side (%dH x %dW)\n", imageHeight, imageWidth);
+            fprintf(stderr, "ERROR: Image exceeds maximum image size (%dH x %dW)\n", imageHeight, imageWidth);
             return EXIT_FAILURE;
         }
 
         //allocate memory for pixel buffer in a 2D array
         image_array = allocateMemoryForPixelArray(imageHeight, imageWidth);
 
-        //read in the pixels from the image
+        //read the image's pixels into image_array
         readPixelsPPM(in_file, image_array, imageWidth, imageHeight);
-
-        //close the input file
-        fclose(in_file);
 
         //color-shift the pixels stored in image_array
         colorShiftPixels(image_array, imageWidth, imageHeight, redShift, greenShift, blueShift);
-
     }
+
+    //close the input file
+    fclose(in_file);
 
     //open the output file
     FILE *out_file = fopen(out_filename, "w");
     if (!out_file)
         perror("fopen out");
 
+    //if user did not specify output file format (-t option)
+    //or if they specified BMP...
     if (t_option == 0 || strcmp(outFileFormat, "BMP") == 0) {
 
+        //if input file is a PPM...
         if(inputIsBMP == 0) {
+            //allocate space and create the appropriate headers
             bmpHeader = malloc(sizeof(struct BMP_Header));
             dibHeader = malloc(sizeof(struct DIB_Header));
+            //these functions create bmp-type headers from a ppm header
             makeBMPHeader(bmpHeader, ppmHeader->width, ppmHeader->height);
             makeDIBHeader(dibHeader, ppmHeader->width, ppmHeader->height);
         }
 
-        //if outfile is a BMP, write BMP/DIB headers out to file
+        //write BMP/DIB headers out to file
         writeBMPHeader(out_file, bmpHeader);
         writeDIBHeader(out_file, dibHeader);
 
@@ -174,6 +188,7 @@ int processImage(char* in_filename) {
         //free all allocated memory
         headerDestructor(bmpHeader);
         headerDestructor(dibHeader);
+        freeImageArray(image_array, dibHeader->width, dibHeader->height);
         return(EXIT_SUCCESS);
 
     } else if (strcmp(outFileFormat, "PPM") == 0) {
@@ -222,4 +237,3 @@ void freeImageArray(struct Pixel** pArr, int height, int width) {
     }
     free(pArr);
 }
-

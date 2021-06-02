@@ -28,11 +28,6 @@ struct DIB_Header{
 };
 
 /**
- * [...]
- */
-void readBMPImage();
-
-/**
  * read BMP header of a file. Useful for converting files from PPM to BMP.
  *
  * @param  file: A pointer to the file being read or written

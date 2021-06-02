@@ -3,9 +3,6 @@
 #include "BmpProcessor.h"
 #include "PixelProcessor.h"
 
-//fread(addressData, sizeData, numbersData, ptrToFile)
-//fwrite(addressData, sizeData, numbersData, pointerToFile)
-
 /**
  * read BMP header of a file. Useful for converting files from PPM to BMP.
  *
