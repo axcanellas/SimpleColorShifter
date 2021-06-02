@@ -20,4 +20,4 @@ options:
   -t <output file format | only valid options are BMP and PPM>
 
 
-example: ./imageprocessor inputimage.bmp -o outputimage.ppm -r 40 -g 200 -b 255 -t ppm
+example: ./imageprocessor inputimage.bmp -o outputimage.ppm -r 40 -g 200 -b 255 -t PPM
