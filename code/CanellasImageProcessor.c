@@ -3,8 +3,6 @@
  * Works with bmp and ppm images. User can specify which type is desired for output using '-t' option.
  * Output filename is specified with '-o' option.
  *
- * Completion time: 50 hours
- *
  * @author Canellas
  * @version 1.0
  */
@@ -48,15 +46,20 @@ struct DIB_Header* dibHeader;
 struct PPM_Header* ppmHeader;
 struct Pixel** image_array;
 
+/**
+ * The main entry point of the program. Take in user-defined arguments using getopt
+ * and store them in global variables to be used in processImage(), the main image
+ * processing function.
+ *
+ * @param argc: number of user arguments
+ * @param argv[]: string containing the user arguments
+ */
 int main(int argc, char* argv[]) {
 
     int option;
     opterr = 0;
-    while ( (option = getopt(argc, argv, ":i:o:r:g:b:t")) != -1 ) {
+    while ( (option = getopt(argc, argv, ":o:r:g:b:t")) != -1 ) {
         switch(option) {
-          /*case 'i':
-              in_filename = optarg;
-              break;*/
           case 'o':
               out_filename = optarg;
               break;
@@ -88,11 +91,18 @@ int main(int argc, char* argv[]) {
 	if (processImage(in_filename) != EXIT_SUCCESS) {
 		exit(EXIT_FAILURE);
 	}
-	//headerDestructor();
-	//imageDestructor(dibHeader->width);
 	return EXIT_SUCCESS;
 }
 
+/**
+ *
+ * The main image processing function reads in and writes out the
+ * appropriate image headers and pixel array based on user's choice
+ * of input and output file types.
+ *
+ * @param  in_filename: name of the input file to be processed
+ * @return  exit failure or exit success flag
+ */
 int processImage(char* in_filename) {
 
     //open input file and check for errors
@@ -109,7 +119,7 @@ int processImage(char* in_filename) {
 
     //if the signature is a BMP...
     if (strcmp(signature, BMP_SIGNATURE) == 0) {
-        //set the appropriate flag
+        //set the appropriate flag (we'll need this for writing later)
         inputIsBMP = 1;
         //allocate space for and read in appropriate headers
         bmpHeader = malloc(sizeof(struct BMP_Header));
@@ -147,7 +157,7 @@ int processImage(char* in_filename) {
         int imageHeight = ppmHeader->height;
         int imageWidth = ppmHeader->width;
 
-        //abort is image exceeds maximum size
+        //abort if image exceeds maximum size
         if(imageHeight > MAXIMUM_IMAGE_SIZE || imageWidth > MAXIMUM_IMAGE_SIZE) {
             headerDestructor(ppmHeader);
             fprintf(stderr, "ERROR: Image exceeds maximum image size (%dH x %dW)\n", imageHeight, imageWidth);
@@ -173,7 +183,7 @@ int processImage(char* in_filename) {
         perror("fopen out");
 
     //if user did not specify output file format (-t option)
-    //or if they specified BMP...
+    //or if they specified BMP, set up to write a BMP file...
     if (t_option == 0 || strcmp(outFileFormat, "BMP") == 0) {
 
         //if input file is a PPM...
@@ -202,10 +212,15 @@ int processImage(char* in_filename) {
         freeImageArray(image_array, dibHeader->width, dibHeader->height);
         return(EXIT_SUCCESS);
 
+    //else if user specified output file format (-t option) as PPM,
+    //set up to write a PPM file...
     } else if (strcmp(outFileFormat, "PPM") == 0) {
 
+        //if the input file is a BMP...
         if(inputIsBMP == 1) {
+            //allocate space and create the appropriate header
             ppmHeader = malloc(sizeof(struct BMP_Header));
+            //this function creates a ppm-type header from bmp-type headers
             makePPMHeader(ppmHeader, dibHeader->width, dibHeader->height);
         }
 
@@ -228,6 +243,14 @@ int processImage(char* in_filename) {
     return (EXIT_FAILURE);
 }
 
+/**
+ * Allocates memory for and creates the 2D array in which the pixel
+ * buffer will be stored
+ *
+ * @param  imageHeight: height of the image
+ * @param  imageWidth: width of the image
+ * @return  the pixel array struct in which the pixel buffer will be stored
+ **/
 struct Pixel** allocateMemoryForPixelArray(int imageHeight, int imageWidth) {
     image_array = (struct Pixel **) malloc(sizeof(struct Pixel*) * imageHeight);
     for (int i = 0; i < imageHeight; i++) {
@@ -236,12 +259,19 @@ struct Pixel** allocateMemoryForPixelArray(int imageHeight, int imageWidth) {
     return image_array;
 }
 
+/**
+ * destroys header of any type and frees its memory
+ **/
 void headerDestructor(void* header) {
     if (header) {
         free(header);
     }
 }
 
+/**
+ * iteratively frees all inner pixel arrays, then frees
+ * the outer array
+ **/
 void freeImageArray(struct Pixel** pArr, int height, int width) {
     for (int i = 0; i < height; i++) {
         free(pArr[i]);
