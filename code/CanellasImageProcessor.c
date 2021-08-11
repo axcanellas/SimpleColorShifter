@@ -1,5 +1,8 @@
 /**
- * Color shifts images based on user input using '-r', -'g', '-b' options for shifting each color channel.
+ * Color shifts images based on user input 
+ * [accepts following options: [alphabetize; 
+ * o = output filetype, 
+ * r = 
  * Works with bmp and ppm images. User can specify which type is desired for output using '-t' option.
  * Output filename is specified with '-o' option.
  *
@@ -28,8 +31,8 @@ void headerDestructor(void* header);
 //MACRO DEFINITIONS
 #define MAX_FILENAME_LENGTH 32
 #define MAXIMUM_IMAGE_SIZE 1000
-#define BMP_SIGNATURE "BM"
-#define PPM_SIGNATURE "P6"
+#define BMP_SIGNATURE "BM" //explain what this is
+#define PPM_SIGNATURE "P6" //explain what this is
 
 //GLOBAL VARIABLES
 char* in_filename;
@@ -79,19 +82,23 @@ int main(int argc, char* argv[]) {
           case ':':
               fprintf(stderr, "\nERROR : option '-%c' requires an argument\n", optopt);
               exit(EXIT_FAILURE);
-          case '?':
+          case '?': //remove this, redundant
           default:
               fprintf(stderr, "\nERROR : option '-%c' is invalid\n", optopt);
 		    }
 	  }
+	
+    //explain whatever this is or delete it
     for (int i = optind; i < argc; i++) {
         in_filename = argv[i];
     }
 
-	if (processImage(in_filename) != EXIT_SUCCESS) {
-		exit(EXIT_FAILURE);
-	}
+    if (processImage(in_filename) != EXIT_SUCCESS) {
+        exit(EXIT_FAILURE);
+    }
+	
 	return EXIT_SUCCESS;
+	
 }
 
 /**
@@ -103,7 +110,7 @@ int main(int argc, char* argv[]) {
  * @param  in_filename: name of the input file to be processed
  * @return  exit failure or exit success flag
  */
-int processImage(char* in_filename) {
+int processImage(char* in_filename) { 
 
     //open input file and check for errors
     FILE* in_file = fopen(in_filename, "rb");
@@ -117,7 +124,7 @@ int processImage(char* in_filename) {
     fread(signature, sizeof(char), 2, in_file);
     rewind(in_file); //reset file read position before moving on
 
-    //if the signature is a BMP...
+    //if the signature is a BMP...PUT THIS IN ITS OWN FUNCTION!!!!!!!!!!!!!!!!!!!!!!!!!
     if (strcmp(signature, BMP_SIGNATURE) == 0) {
         //set the appropriate flag (we'll need this for writing later)
         inputIsBMP = 1;
@@ -147,7 +154,7 @@ int processImage(char* in_filename) {
         //color-shift the pixels stored in image_array
         colorShiftPixels(image_array, imageWidth, imageHeight, redShift, greenShift, blueShift);
 
-    //if the signature is a PPM...
+    //if the signature is a PPM...PUT THIS IN ITS OWN FUNCTION!!!!!!!!!!!!!!!!!!!!!!!!!
     } else if (strcmp(signature, PPM_SIGNATURE) == 0) {
         //inputIsBMP flag already initialized to 0
         //allocate space for and read in appropriate headers
@@ -174,6 +181,8 @@ int processImage(char* in_filename) {
         colorShiftPixels(image_array, imageWidth, imageHeight, redShift, greenShift, blueShift);
     }
 
+    //CHECK IF INPUT IS ANYTHING OTHER THAN BMP OR PPM AND EXPLICITLY TELL USER THEYRE MISUSING FUNCTION
+	
     //close the input file
     fclose(in_file);
 
@@ -184,8 +193,8 @@ int processImage(char* in_filename) {
 
     //if user did not specify output file format (-t option)
     //or if they specified BMP, set up to write a BMP file...
-    if (t_option == 0 || strcmp(outFileFormat, "BMP") == 0) {
-
+    if (t_option == 0 || strcmp(outFileFormat, "BMP") == 0) { //change string to constant like bmpSignature or something
+                                                                                 //PUT THIS...
         //if input file is a PPM...
         if(inputIsBMP == 0) {
             //allocate space and create the appropriate headers
@@ -211,11 +220,11 @@ int processImage(char* in_filename) {
         headerDestructor(dibHeader);
         freeImageArray(image_array, dibHeader->width, dibHeader->height);
         return(EXIT_SUCCESS);
-
+                                                                                 //IN ITS OWN FUNCTION
     //else if user specified output file format (-t option) as PPM,
     //set up to write a PPM file...
-    } else if (strcmp(outFileFormat, "PPM") == 0) {
-
+    } else if (strcmp(outFileFormat, "PPM") == 0) { //change string to constant like ppmSignature or something
+                                                                                 //PUT THIS...
         //if the input file is a BMP...
         if(inputIsBMP == 1) {
             //allocate space and create the appropriate header
@@ -237,7 +246,7 @@ int processImage(char* in_filename) {
         headerDestructor(ppmHeader);
         freeImageArray(image_array, ppmHeader->width, ppmHeader->height);
         image_array = NULL;
-
+                                                                                   //IN ITS OWN FUNCTION
         return (EXIT_SUCCESS);
     }
     return (EXIT_FAILURE);
@@ -260,7 +269,7 @@ struct Pixel** allocateMemoryForPixelArray(int imageHeight, int imageWidth) {
 }
 
 /**
- * destroys header of any type and frees its memory
+ * destroys header of any type and frees its memory CHECK IF HEADERS CAN EVER ACTUALLY BE NULL, IF NOT THIS FCT IS USELESS
  **/
 void headerDestructor(void* header) {
     if (header) {
