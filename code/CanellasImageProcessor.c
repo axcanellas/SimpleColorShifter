@@ -31,8 +31,8 @@ void headerDestructor(void* header);
 //MACRO DEFINITIONS
 #define MAX_FILENAME_LENGTH 32
 #define MAXIMUM_IMAGE_SIZE 1000
-#define BMP_SIGNATURE "BM" //explain what this is
-#define PPM_SIGNATURE "P6" //explain what this is
+#define BMP_SIGNATURE "BM" // the signature in a .bmp header specifying file format
+#define PPM_SIGNATURE "P6" // the signature in a .ppm header specifying file format
 
 //GLOBAL VARIABLES
 char* in_filename;
@@ -82,13 +82,11 @@ int main(int argc, char* argv[]) {
           case ':':
               fprintf(stderr, "\nERROR : option '-%c' requires an argument\n", optopt);
               exit(EXIT_FAILURE);
-          case '?': //remove this, redundant
           default:
               fprintf(stderr, "\nERROR : option '-%c' is invalid\n", optopt);
 		    }
 	  }
-	
-    //explain whatever this is or delete it
+
     for (int i = optind; i < argc; i++) {
         in_filename = argv[i];
     }
@@ -124,7 +122,8 @@ int processImage(char* in_filename) {
     fread(signature, sizeof(char), 2, in_file);
     rewind(in_file); //reset file read position before moving on
 
-    //if the signature is a BMP...PUT THIS IN ITS OWN FUNCTION!!!!!!!!!!!!!!!!!!!!!!!!!
+    //if the signature is a BMP... 
+    //TODO: Put this section in its own function
     if (strcmp(signature, BMP_SIGNATURE) == 0) {
         //set the appropriate flag (we'll need this for writing later)
         inputIsBMP = 1;
@@ -154,7 +153,8 @@ int processImage(char* in_filename) {
         //color-shift the pixels stored in image_array
         colorShiftPixels(image_array, imageWidth, imageHeight, redShift, greenShift, blueShift);
 
-    //if the signature is a PPM...PUT THIS IN ITS OWN FUNCTION!!!!!!!!!!!!!!!!!!!!!!!!!
+    //if the signature is a PPM...
+    //TODO: Put this section in its own function
     } else if (strcmp(signature, PPM_SIGNATURE) == 0) {
         //inputIsBMP flag already initialized to 0
         //allocate space for and read in appropriate headers
@@ -181,7 +181,7 @@ int processImage(char* in_filename) {
         colorShiftPixels(image_array, imageWidth, imageHeight, redShift, greenShift, blueShift);
     }
 
-    //CHECK IF INPUT IS ANYTHING OTHER THAN BMP OR PPM AND EXPLICITLY TELL USER THEYRE MISUSING FUNCTION
+    //TODO: Check if input is anything other than bmp/ppm and explicitly tell user it is invalid
 	
     //close the input file
     fclose(in_file);
@@ -194,7 +194,7 @@ int processImage(char* in_filename) {
     //if user did not specify output file format (-t option)
     //or if they specified BMP, set up to write a BMP file...
     if (t_option == 0 || strcmp(outFileFormat, "BMP") == 0) { //change string to constant like bmpSignature or something
-                                                                                 //PUT THIS...
+    //TODO: put all of this...
         //if input file is a PPM...
         if(inputIsBMP == 0) {
             //allocate space and create the appropriate headers
@@ -220,11 +220,12 @@ int processImage(char* in_filename) {
         headerDestructor(dibHeader);
         freeImageArray(image_array, dibHeader->width, dibHeader->height);
         return(EXIT_SUCCESS);
-                                                                                 //IN ITS OWN FUNCTION
+    //...in its own function
+	    
     //else if user specified output file format (-t option) as PPM,
     //set up to write a PPM file...
     } else if (strcmp(outFileFormat, "PPM") == 0) { //change string to constant like ppmSignature or something
-                                                                                 //PUT THIS...
+    //TODO: put all of this...
         //if the input file is a BMP...
         if(inputIsBMP == 1) {
             //allocate space and create the appropriate header
@@ -246,7 +247,8 @@ int processImage(char* in_filename) {
         headerDestructor(ppmHeader);
         freeImageArray(image_array, ppmHeader->width, ppmHeader->height);
         image_array = NULL;
-                                                                                   //IN ITS OWN FUNCTION
+    //...in its own function
+	    
         return (EXIT_SUCCESS);
     }
     return (EXIT_FAILURE);
@@ -269,7 +271,8 @@ struct Pixel** allocateMemoryForPixelArray(int imageHeight, int imageWidth) {
 }
 
 /**
- * destroys header of any type and frees its memory CHECK IF HEADERS CAN EVER ACTUALLY BE NULL, IF NOT THIS FCT IS USELESS
+ * destroys header of any type and frees its memory 
+ * TODO: Check if headers can ever actually be null, if not delete this function
  **/
 void headerDestructor(void* header) {
     if (header) {
